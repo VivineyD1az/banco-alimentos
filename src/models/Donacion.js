@@ -13,7 +13,7 @@ const Donacion = sequelize.define('Donacion', {
   },
   donante_id: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: true
   },
   cantidad: {
     type: DataTypes.FLOAT

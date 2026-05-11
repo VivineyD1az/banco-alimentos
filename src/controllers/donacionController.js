@@ -33,8 +33,31 @@ const obtenerDonacionPorId = async (req, res) => {
 
 const crearDonacion = async (req, res) => {
   try {
-    const { usuario_id, donante_id, cantidad, fecha, productos } = req.body;
-    const donacion = await Donacion.create({ usuario_id, donante_id, cantidad, fecha });
+    const { usuario_id, donante_id, cantidad, fecha, productos, nombre_donante, correo_donante, telefono_donante } = req.body;
+
+    let finalDonante_id = donante_id;
+
+    // Si se envían datos del donante, crear o buscar
+    if (nombre_donante) {
+      const donanteExistente = await Donante.findOne({
+        where: { correo: correo_donante || null }
+      });
+
+      if (donanteExistente) {
+        finalDonante_id = donanteExistente.id;
+      } else {
+        // Crear nuevo donante
+        const nuevoDonante = await Donante.create({
+          nombre_completo: nombre_donante,
+          correo: correo_donante || null,
+          telefono: telefono_donante || null
+        });
+        finalDonante_id = nuevoDonante.id;
+      }
+    }
+    // Si no hay donante_id ni datos, será una donación anónima (donante_id = null)
+
+    const donacion = await Donacion.create({ usuario_id, donante_id: finalDonante_id, cantidad, fecha });
 
     if (productos && productos.length > 0) {
       await Promise.all(productos.map(p =>
